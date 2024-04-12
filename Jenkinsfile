@@ -46,7 +46,7 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    curl $ENDPOINT:85 | grep "CRM"
+                    curl $ENDPOINT:85 | grep "Intranet  Applications"
                     sleep 5
                     
                     '''
