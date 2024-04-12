@@ -33,7 +33,7 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    docker run --name=$CONTAINER_TEST_NAME -dp 84:8080 $INAGE_NAME:$INAGE_TAG
+                    docker run --name=$CONTAINER_TEST_NAME -dp 85:8080 $INAGE_NAME:$INAGE_TAG
                     sleep 5
                     
                     '''
@@ -46,7 +46,7 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    curl $ENDPOINT:85 | grep "Olivier Djatchue"
+                    curl $ENDPOINT:85 | grep "CRM"
                     sleep 5
                     
                     '''
