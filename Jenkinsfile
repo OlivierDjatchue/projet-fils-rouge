@@ -1,10 +1,11 @@
 pipeline{
     environment {
-        INAGE_NAME ="alpinehelloworld"
-        INAGE_TAG ="latest"
+        INAGE_NAME ="ic-webapp"
+        INAGE_TAG ="1.0"
         STAGING = "olivierbana-staging"
         PRODUCTION = "olivierbana-prod"
         ENDPOINT ="http://18.206.168.91"
+        CONTAINER_TEST_NAME="test-ic-webapp"
     }
     agent none
     stages{
@@ -12,7 +13,7 @@ pipeline{
             agent any
             steps{
                 script {
-                    sh 'docker build -t olivierdja/$INAGE_NAME:$INAGE_NAME .' 
+                    sh 'docker build -t $INAGE_NAME:$INAGE_TAG .' 
                 }
             }
         }
@@ -21,7 +22,7 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    docker rm -f $INAGE_NAME || echo "Container does not exist"
+                    docker rm -f $CONTAINER_TEST_NAME || echo "Container does not exist"
                     
                     '''
                 }
@@ -32,7 +33,7 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    docker run --name=$INAGE_NAME -dp 84:5000 -e PORT=5000 olivierdja/$INAGE_NAME:$INAGE_NAME
+                    docker run --name=$CONTAINER_TEST_NAME -dp 84:8080 $INAGE_NAME:$INAGE_TAG
                     sleep 5
                     
                     '''
@@ -45,7 +46,7 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    curl $ENDPOINT:84 | grep "Olivier Djatchue"
+                    curl $ENDPOINT:85 | grep "Olivier Djatchue"
                     sleep 5
                     
                     '''
@@ -57,54 +58,15 @@ pipeline{
             steps{
                 script {
                     sh '''
-                    docker stop $INAGE_NAME
-                    docker rm $INAGE_NAME
+                    docker stop $CONTAINER_TEST_NAME
+                    docker rm $CONTAINER_TEST_NAME
                     '''
                 }
             }
         }
-        stage('push imahe in staging and deploy'){
-            when{
-                expression { GIT_BRANCH == 'origin/master'}
-            }
-            agent any
-            environment{
-                HEROKU_API_KEY = credentials('heroku_api_key')
-            }
-            steps{
-                script {
-                    sh '''
-                    npm i -g heroku@7.68.0
-                    heroku container:login
-                    heroku create $STAGING || echo "project already exist"
-                    heroku container:push -a $STAGING web
-                    heroku container:release -a $STAGING web
-                    
-                    '''
-                }
-            }
-        }
-        stage('push imahe in PRODUCTION and deploy'){
-            when{
-                expression { GIT_BRANCH == 'origin/master'}
-            }
-            agent any
-            environment{
-                HEROKU_API_KEY = credentials('heroku_api_key')
-            }
-            steps{
-                script {
-                    sh '''
-                  npm i -g heroku@7.68.0
-                  heroku container:login
-                  heroku create $PRODUCTION || echo "project already exist"
-                  heroku container:push -a $PRODUCTION web
-                  heroku container:release -a $PRODUCTION web
-                    
-                    '''
-                }
-            }
-        }
+       
+    
+        
     }
 }
 
